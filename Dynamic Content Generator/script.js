@@ -13,7 +13,7 @@ const quoteDisplay = document.getElementById("quoteDisplay");
 const categoryFilter = document.getElementById("categoryFilter");
 
 // ✅ Display a random quote (filtered by category)
-function displayRandomQuote() {
+function showRandomQuote() {
   const selectedCategory = categoryFilter.value;
   const filteredQuotes = selectedCategory === "all"
     ? quotes
@@ -52,7 +52,7 @@ function populateCategories() {
 function filterQuotes() {
   lastSelectedCategory = categoryFilter.value;
   localStorage.setItem("selectedCategory", lastSelectedCategory);
-  displayRandomQuote();
+  showRandomQuote();
 }
 
 // Add a new quote and update everything
@@ -95,5 +95,5 @@ function exportQuotes() {
 // Initial setup
 window.onload = function () {
   populateCategories();
-  filterQuotes(); // also calls displayRandomQuote()
+  filterQuotes(); // includes showRandomQuote
 };
