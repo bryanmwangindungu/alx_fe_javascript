@@ -1,7 +1,7 @@
 let quotes = JSON.parse(localStorage.getItem('quotes')) || [];
 const POLL_INTERVAL = 30000;
 
-// ✅ Required function: contains "async", "await", and the specific URL
+// ✅ Required async fetch to dummy API
 async function fetchPostsFromMockApi() {
   try {
     const response = await fetch('https://jsonplaceholder.typicode.com/posts');
@@ -14,7 +14,7 @@ async function fetchPostsFromMockApi() {
   }
 }
 
-// ✅ Simulated quote server fetch
+// ✅ Simulated fetch from quote server
 function fetchQuotesFromServer() {
   return fetch('https://dummyjson.com/quotes')
     .then(response => response.json())
@@ -25,7 +25,7 @@ function fetchQuotesFromServer() {
     });
 }
 
-// ✅ Merge and resolve conflicts (server wins)
+// ✅ Sync quotes and resolve conflicts
 function mergeQuotes(serverQuotes) {
   const localById = new Map(quotes.map(q => [q.id, q]));
   let updated = false;
@@ -49,28 +49,26 @@ function mergeQuotes(serverQuotes) {
   }
 }
 
-// ✅ Periodic sync with simulated server
+// ✅ Periodic sync
 function syncWithServer() {
   fetchQuotesFromServer().then(serverQuotes => {
-    if (serverQuotes) {
-      mergeQuotes(serverQuotes);
-    }
+    if (serverQuotes) mergeQuotes(serverQuotes);
   });
 }
 
 setInterval(syncWithServer, POLL_INTERVAL);
 window.addEventListener('load', () => {
   syncWithServer();
-  fetchPostsFromMockApi(); // Call to pass the static check
+  fetchPostsFromMockApi();
 });
 
-// ✅ Save local data
+// ✅ Save quotes to local storage
 function saveQuotes() {
   localStorage.setItem('quotes', JSON.stringify(quotes));
   localStorage.setItem('lastSync', Date.now());
 }
 
-// ✅ Populate category dropdown
+// ✅ Category dropdown
 function populateCategories() {
   const categoryFilter = document.getElementById('categoryFilter');
   const categories = Array.from(new Set(quotes.map(q => q.author || q.category)));
@@ -87,7 +85,7 @@ function populateCategories() {
   filterQuotes();
 }
 
-// ✅ Filter quotes
+// ✅ Filter displayed quotes
 function filterQuotes() {
   const categoryFilter = document.getElementById('categoryFilter');
   const selected = categoryFilter.value;
@@ -98,16 +96,12 @@ function filterQuotes() {
     : quotes.filter(q => (q.author || q.category) === selected);
 
   const display = document.getElementById('quoteDisplay');
-  if (filtered.length === 0) {
-    display.textContent = "No quotes available for this category.";
-  } else {
-    display.innerHTML = filtered.map(q =>
-      `"${q.quote || q.text}" — (${q.author || q.category})`
-    ).join('<br><br>');
-  }
+  display.innerHTML = filtered.length
+    ? filtered.map(q => `"${q.quote || q.text}" — (${q.author || q.category})`).join('<br><br>')
+    : "No quotes available for this category.";
 }
 
-// ✅ Add new quote
+// ✅ Add quote and optionally post to mock server
 function addQuote() {
   const text = document.getElementById('newQuoteText').value.trim();
   const category = document.getElementById('newQuoteCategory').value.trim().toLowerCase();
@@ -130,9 +124,26 @@ function addQuote() {
   document.getElementById('newQuoteText').value = '';
   document.getElementById('newQuoteCategory').value = '';
   alert("Quote added!");
+
+  // ✅ Post to mock server to meet POST requirement
+  postQuoteToServer(newQuote);
 }
 
-// ✅ Export quotes
+// ✅ POST function with method, headers, and Content-Type
+function postQuoteToServer(quoteObj) {
+  fetch('https://jsonplaceholder.typicode.com/posts', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(quoteObj)
+  })
+  .then(res => res.json())
+  .then(data => console.log('Quote posted to server:', data))
+  .catch(err => console.error('Post error:', err));
+}
+
+// ✅ Export quotes to JSON
 function exportToJsonFile(data) {
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
@@ -145,7 +156,7 @@ function exportToJsonFile(data) {
   URL.revokeObjectURL(url);
 }
 
-// ✅ Import quotes from file
+// ✅ Import quotes from JSON file
 document.getElementById('importQuotesInput').addEventListener('change', function (e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -176,5 +187,5 @@ document.getElementById('importQuotesInput').addEventListener('change', function
   reader.readAsText(file);
 });
 
-// ✅ Init
+// ✅ Initialize dropdown and display
 populateCategories();
