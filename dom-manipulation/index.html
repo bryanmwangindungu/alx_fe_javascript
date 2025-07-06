@@ -16,18 +16,21 @@
       border-left: 5px solid #333;
       font-style: italic;
     }
-    input {
+    input, select {
       margin-right: 10px;
       padding: 5px;
     }
     button {
-      padding: 5px 10px;
+      padding: 6px 12px;
+      margin-top: 10px;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
   <h1>Dynamic Quote Generator</h1>
 
+  <!-- Category Filter & New Quote -->
   <div>
     <label for="categorySelect">Choose Category:</label>
     <select id="categorySelect">
@@ -36,13 +39,21 @@
     <button id="newQuote">Show New Quote</button>
   </div>
 
+  <!-- Display Area -->
   <div id="quoteDisplay">Click "Show New Quote" to get started!</div>
 
+  <!-- Add Quote Form -->
   <h3>Add a New Quote</h3>
   <div>
     <input id="newQuoteText" type="text" placeholder="Enter a new quote" />
     <input id="newQuoteCategory" type="text" placeholder="Enter quote category" />
     <button id="addQuoteBtn">Add Quote</button>
+  </div>
+
+  <!-- ✅ Export Quotes Button -->
+  <h3>Export Quotes</h3>
+  <div>
+    <button id="exportQuotesBtn">Export Quotes</button>
   </div>
 
   <script src="script.js"></script>
