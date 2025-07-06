@@ -1,7 +1,7 @@
 let quotes = JSON.parse(localStorage.getItem('quotes')) || [];
 const POLL_INTERVAL = 30000;
 
-// ✅ Required async fetch to dummy API
+// ✅ Async fetch with await + JSONPlaceholder (required)
 async function fetchPostsFromMockApi() {
   try {
     const response = await fetch('https://jsonplaceholder.typicode.com/posts');
@@ -14,7 +14,7 @@ async function fetchPostsFromMockApi() {
   }
 }
 
-// ✅ Simulated fetch from quote server
+// ✅ Fetch quotes from simulated server
 function fetchQuotesFromServer() {
   return fetch('https://dummyjson.com/quotes')
     .then(response => response.json())
@@ -25,7 +25,7 @@ function fetchQuotesFromServer() {
     });
 }
 
-// ✅ Sync quotes and resolve conflicts
+// ✅ Merge and resolve quote conflicts (server wins)
 function mergeQuotes(serverQuotes) {
   const localById = new Map(quotes.map(q => [q.id, q]));
   let updated = false;
@@ -49,26 +49,20 @@ function mergeQuotes(serverQuotes) {
   }
 }
 
-// ✅ Periodic sync
-function syncWithServer() {
+// ✅ Required: syncQuotes function
+function syncQuotes() {
   fetchQuotesFromServer().then(serverQuotes => {
     if (serverQuotes) mergeQuotes(serverQuotes);
   });
 }
 
-setInterval(syncWithServer, POLL_INTERVAL);
-window.addEventListener('load', () => {
-  syncWithServer();
-  fetchPostsFromMockApi();
-});
-
-// ✅ Save quotes to local storage
+// ✅ Save to local storage
 function saveQuotes() {
   localStorage.setItem('quotes', JSON.stringify(quotes));
   localStorage.setItem('lastSync', Date.now());
 }
 
-// ✅ Category dropdown
+// ✅ Populate dropdown
 function populateCategories() {
   const categoryFilter = document.getElementById('categoryFilter');
   const categories = Array.from(new Set(quotes.map(q => q.author || q.category)));
@@ -101,7 +95,7 @@ function filterQuotes() {
     : "No quotes available for this category.";
 }
 
-// ✅ Add quote and optionally post to mock server
+// ✅ Add new quote
 function addQuote() {
   const text = document.getElementById('newQuoteText').value.trim();
   const category = document.getElementById('newQuoteCategory').value.trim().toLowerCase();
@@ -125,11 +119,11 @@ function addQuote() {
   document.getElementById('newQuoteCategory').value = '';
   alert("Quote added!");
 
-  // ✅ Post to mock server to meet POST requirement
+  // ✅ POST to mock server
   postQuoteToServer(newQuote);
 }
 
-// ✅ POST function with method, headers, and Content-Type
+// ✅ POST request with method, headers, Content-Type
 function postQuoteToServer(quoteObj) {
   fetch('https://jsonplaceholder.typicode.com/posts', {
     method: 'POST',
@@ -138,12 +132,12 @@ function postQuoteToServer(quoteObj) {
     },
     body: JSON.stringify(quoteObj)
   })
-  .then(res => res.json())
-  .then(data => console.log('Quote posted to server:', data))
-  .catch(err => console.error('Post error:', err));
+    .then(res => res.json())
+    .then(data => console.log('Quote posted to server:', data))
+    .catch(err => console.error('Post error:', err));
 }
 
-// ✅ Export quotes to JSON
+// ✅ Export to JSON
 function exportToJsonFile(data) {
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
@@ -156,7 +150,7 @@ function exportToJsonFile(data) {
   URL.revokeObjectURL(url);
 }
 
-// ✅ Import quotes from JSON file
+// ✅ Import from JSON file
 document.getElementById('importQuotesInput').addEventListener('change', function (e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -187,5 +181,11 @@ document.getElementById('importQuotesInput').addEventListener('change', function
   reader.readAsText(file);
 });
 
-// ✅ Initialize dropdown and display
+// ✅ Initialize everything
+window.addEventListener('load', () => {
+  syncQuotes(); // <- replaced syncWithServer
+  fetchPostsFromMockApi();
+});
+
+setInterval(syncQuotes, POLL_INTERVAL);
 populateCategories();
