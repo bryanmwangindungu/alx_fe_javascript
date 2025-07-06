@@ -44,8 +44,9 @@ function mergeQuotes(serverQuotes) {
 
   if (updated) {
     saveQuotes();
-    alert('Quotes updated from server.');
     populateCategories();
+    alert('Quotes updated from server.');
+    console.log("Quotes synced with server!"); // ✅ required
   }
 }
 
@@ -183,7 +184,7 @@ document.getElementById('importQuotesInput').addEventListener('change', function
 
 // ✅ Initialize everything
 window.addEventListener('load', () => {
-  syncQuotes(); // <- replaced syncWithServer
+  syncQuotes();
   fetchPostsFromMockApi();
 });
 
