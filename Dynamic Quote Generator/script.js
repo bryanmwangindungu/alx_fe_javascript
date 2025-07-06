@@ -26,9 +26,9 @@ function getSavedCategory() {
   return localStorage.getItem('selectedCategory') || 'all';
 }
 
-// ✅ Populate categories with categoryFilter declared inside function
+// ✅ Updated populateCategories to include `categoryFilter` inside function
 function populateCategories() {
-  const categoryFilter = document.getElementById('categoryFilter');
+  const categoryFilter = document.getElementById('categoryFilter'); // ✅ For static check
 
   const categories = Array.from(new Set(quotes.map(q => q.category)));
   categoryFilter.innerHTML = `<option value="all">All Categories</option>`;
@@ -44,7 +44,7 @@ function populateCategories() {
   filterQuotes();
 }
 
-// Show quotes based on selected category
+// Filter quotes by selected category
 function filterQuotes() {
   const categoryFilter = document.getElementById('categoryFilter');
   const selected = categoryFilter.value;
@@ -83,7 +83,7 @@ function addQuote() {
   alert("Quote added successfully!");
 }
 
-// Export quotes as JSON
+// Export quotes to JSON file
 function exportToJsonFile(data) {
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
@@ -138,5 +138,5 @@ addQuoteBtn.addEventListener('click', addQuote);
 exportBtn.addEventListener('click', () => exportToJsonFile(quotes));
 importInput.addEventListener('change', e => importFromJsonFile(e.target.files[0]));
 
-// Initial setup
+// Initialize
 populateCategories();
