@@ -1,4 +1,4 @@
-// Load quotes from localStorage if available
+// Load existing quotes or use defaults
 let quotes = JSON.parse(localStorage.getItem('quotes')) || [
   { text: "The best way to get started is to quit talking and begin doing.", category: "motivation" },
   { text: "Life is what happens when you're busy making other plans.", category: "life" },
@@ -11,8 +11,9 @@ const addQuoteBtn = document.getElementById('addQuoteBtn');
 const categorySelect = document.getElementById('categorySelect');
 const quoteInput = document.getElementById('newQuoteText');
 const categoryInput = document.getElementById('newQuoteCategory');
+const exportBtn = document.getElementById('exportQuotesBtn');
 
-// Save quotes array to localStorage
+// Save quotes to localStorage
 function saveQuotes() {
   localStorage.setItem('quotes', JSON.stringify(quotes));
 }
@@ -29,7 +30,7 @@ function populateCategories() {
   });
 }
 
-// Show random quote
+// Show a random quote
 function showRandomQuote() {
   const selectedCategory = categorySelect.value;
   let filteredQuotes = quotes;
@@ -49,7 +50,7 @@ function showRandomQuote() {
   quoteDisplay.textContent = `"${quote.text}" — (${quote.category})`;
 }
 
-// Add new quote
+// Add a new quote
 function addQuote() {
   const text = quoteInput.value.trim();
   const category = categoryInput.value.trim().toLowerCase();
@@ -60,18 +61,36 @@ function addQuote() {
   }
 
   quotes.push({ text, category });
-  saveQuotes();  // Save to localStorage
+  saveQuotes();
+  populateCategories();
 
   quoteInput.value = '';
   categoryInput.value = '';
+  alert("Quote added successfully!");
+}
 
-  populateCategories();
-  alert("New quote added successfully!");
+// ✅ Export quotes using Blob and application/json
+function exportToJsonFile(jsonData) {
+  const dataStr = JSON.stringify(jsonData, null, 2);
+  const blob = new Blob([dataStr], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+
+  const downloadAnchor = document.createElement('a');
+  downloadAnchor.href = url;
+  downloadAnchor.download = "quotes.json";
+  document.body.appendChild(downloadAnchor);
+  downloadAnchor.click();
+  document.body.removeChild(downloadAnchor);
+
+  URL.revokeObjectURL(url);
 }
 
 // Event listeners
 newQuoteBtn.addEventListener('click', showRandomQuote);
 addQuoteBtn.addEventListener('click', addQuote);
+exportBtn.addEventListener('click', () => {
+  exportToJsonFile(quotes);
+});
 
 // Initial setup
 populateCategories();
