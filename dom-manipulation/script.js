@@ -5,6 +5,7 @@ let quotes = JSON.parse(localStorage.getItem('quotes')) || [
   { text: "Success is not the key to happiness. Happiness is the key to success.", category: "success" }
 ];
 
+// DOM elements
 const quoteDisplay = document.getElementById('quoteDisplay');
 const newQuoteBtn = document.getElementById('newQuote');
 const addQuoteBtn = document.getElementById('addQuoteBtn');
@@ -12,13 +13,14 @@ const categorySelect = document.getElementById('categorySelect');
 const quoteInput = document.getElementById('newQuoteText');
 const categoryInput = document.getElementById('newQuoteCategory');
 const exportBtn = document.getElementById('exportQuotesBtn');
+const importInput = document.getElementById('importQuotesInput');
 
-// Save quotes to localStorage
+// Save to localStorage
 function saveQuotes() {
   localStorage.setItem('quotes', JSON.stringify(quotes));
 }
 
-// Populate categories in dropdown
+// Populate category dropdown
 function populateCategories() {
   const categories = new Set(quotes.map(q => q.category));
   categorySelect.innerHTML = `<option value="all">All</option>`;
@@ -33,11 +35,9 @@ function populateCategories() {
 // Show a random quote
 function showRandomQuote() {
   const selectedCategory = categorySelect.value;
-  let filteredQuotes = quotes;
-
-  if (selectedCategory !== 'all') {
-    filteredQuotes = quotes.filter(q => q.category === selectedCategory);
-  }
+  const filteredQuotes = selectedCategory === 'all'
+    ? quotes
+    : quotes.filter(q => q.category === selectedCategory);
 
   if (filteredQuotes.length === 0) {
     quoteDisplay.textContent = "No quotes available for this category.";
@@ -69,7 +69,7 @@ function addQuote() {
   alert("Quote added successfully!");
 }
 
-// ✅ Export quotes using Blob and application/json
+// ✅ Export quotes as JSON file using Blob
 function exportToJsonFile(jsonData) {
   const dataStr = JSON.stringify(jsonData, null, 2);
   const blob = new Blob([dataStr], { type: "application/json" });
@@ -85,11 +85,51 @@ function exportToJsonFile(jsonData) {
   URL.revokeObjectURL(url);
 }
 
+// ✅ Import quotes from file
+function importFromJsonFile(file) {
+  if (!file) return;
+
+  const reader = new FileReader();
+
+  reader.onload = function (e) {
+    try {
+      const importedQuotes = JSON.parse(e.target.result);
+
+      if (!Array.isArray(importedQuotes)) {
+        alert("Invalid file format. Must be an array of quote objects.");
+        return;
+      }
+
+      let count = 0;
+      importedQuotes.forEach(q => {
+        if (q.text && q.category) {
+          quotes.push({ text: q.text, category: q.category.toLowerCase() });
+          count++;
+        }
+      });
+
+      if (count > 0) {
+        saveQuotes();
+        populateCategories();
+        alert(`${count} quotes imported successfully.`);
+      } else {
+        alert("No valid quotes found in file.");
+      }
+
+    } catch (err) {
+      alert("Failed to parse file: " + err.message);
+    }
+  };
+
+  reader.readAsText(file);
+}
+
 // Event listeners
 newQuoteBtn.addEventListener('click', showRandomQuote);
 addQuoteBtn.addEventListener('click', addQuote);
-exportBtn.addEventListener('click', () => {
-  exportToJsonFile(quotes);
+exportBtn.addEventListener('click', () => exportToJsonFile(quotes));
+importInput.addEventListener('change', function (event) {
+  importFromJsonFile(event.target.files[0]);
 });
 
 // Initial setup
