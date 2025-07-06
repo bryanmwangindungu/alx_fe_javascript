@@ -7,7 +7,6 @@ let quotes = JSON.parse(localStorage.getItem('quotes')) || [
 const quoteDisplay = document.getElementById('quoteDisplay');
 const quoteInput = document.getElementById('newQuoteText');
 const categoryInput = document.getElementById('newQuoteCategory');
-const categoryFilter = document.getElementById('categoryFilter');
 const addQuoteBtn = document.getElementById('addQuoteBtn');
 const exportBtn = document.getElementById('exportQuotesBtn');
 const importInput = document.getElementById('importQuotesInput');
@@ -17,18 +16,20 @@ function saveQuotes() {
   localStorage.setItem('quotes', JSON.stringify(quotes));
 }
 
-// Save last selected filter
+// Save selected category filter
 function saveSelectedCategory(category) {
   localStorage.setItem('selectedCategory', category);
 }
 
-// Get selected category from localStorage
+// Retrieve last selected category
 function getSavedCategory() {
   return localStorage.getItem('selectedCategory') || 'all';
 }
 
-// Populate dropdown filter with categories
+// ✅ Populate categories with categoryFilter declared inside function
 function populateCategories() {
+  const categoryFilter = document.getElementById('categoryFilter');
+
   const categories = Array.from(new Set(quotes.map(q => q.category)));
   categoryFilter.innerHTML = `<option value="all">All Categories</option>`;
   categories.forEach(cat => {
@@ -40,11 +41,12 @@ function populateCategories() {
 
   const savedCategory = getSavedCategory();
   categoryFilter.value = savedCategory;
-  filterQuotes(); // Apply filter immediately
+  filterQuotes();
 }
 
-// Show filtered quotes
+// Show quotes based on selected category
 function filterQuotes() {
+  const categoryFilter = document.getElementById('categoryFilter');
   const selected = categoryFilter.value;
   saveSelectedCategory(selected);
 
@@ -62,7 +64,7 @@ function filterQuotes() {
   ).join('<br><br>');
 }
 
-// Add new quote
+// Add a new quote
 function addQuote() {
   const text = quoteInput.value.trim();
   const category = categoryInput.value.trim().toLowerCase();
@@ -81,7 +83,7 @@ function addQuote() {
   alert("Quote added successfully!");
 }
 
-// Export to JSON
+// Export quotes as JSON
 function exportToJsonFile(data) {
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
@@ -95,11 +97,12 @@ function exportToJsonFile(data) {
   URL.revokeObjectURL(url);
 }
 
-// Import from file
+// Import quotes from file
 function importFromJsonFile(file) {
   if (!file) return;
 
   const reader = new FileReader();
+
   reader.onload = function (e) {
     try {
       const data = JSON.parse(e.target.result);
@@ -135,5 +138,5 @@ addQuoteBtn.addEventListener('click', addQuote);
 exportBtn.addEventListener('click', () => exportToJsonFile(quotes));
 importInput.addEventListener('change', e => importFromJsonFile(e.target.files[0]));
 
-// On load
+// Initial setup
 populateCategories();
