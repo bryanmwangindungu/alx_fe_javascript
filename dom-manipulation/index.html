@@ -30,7 +30,7 @@
 <body>
   <h1>Dynamic Quote Generator</h1>
 
-  <!-- Category Filter & New Quote -->
+  <!-- Category Filter -->
   <div>
     <label for="categorySelect">Choose Category:</label>
     <select id="categorySelect">
@@ -39,10 +39,10 @@
     <button id="newQuote">Show New Quote</button>
   </div>
 
-  <!-- Display Area -->
+  <!-- Quote Display -->
   <div id="quoteDisplay">Click "Show New Quote" to get started!</div>
 
-  <!-- Add Quote Form -->
+  <!-- Add New Quote -->
   <h3>Add a New Quote</h3>
   <div>
     <input id="newQuoteText" type="text" placeholder="Enter a new quote" />
@@ -50,10 +50,16 @@
     <button id="addQuoteBtn">Add Quote</button>
   </div>
 
-  <!-- ✅ Export Quotes Button -->
+  <!-- Export Quotes -->
   <h3>Export Quotes</h3>
   <div>
     <button id="exportQuotesBtn">Export Quotes</button>
+  </div>
+
+  <!-- ✅ Import Quotes -->
+  <h3>Import Quotes</h3>
+  <div>
+    <input type="file" id="importQuotesInput" accept="application/json" />
   </div>
 
   <script src="script.js"></script>
