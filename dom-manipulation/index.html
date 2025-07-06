@@ -1,67 +1,148 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Dynamic Quote Generator</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
+let quotes = JSON.parse(localStorage.getItem('quotes')) || [];
+let lastSync = localStorage.getItem('lastSync') || 0;
+const POLL_INTERVAL = 30000;
+
+async function fetchServerQuotes() {
+  try {
+    const res = await fetch('https://dummyjson.com/quotes');
+    const data = await res.json();
+    return data.quotes; // Array of quotes
+  } catch (err) {
+    console.error('Fetch error:', err);
+    return null;
+  }
+}
+
+function saveQuotes() {
+  localStorage.setItem('quotes', JSON.stringify(quotes));
+  localStorage.setItem('lastSync', Date.now());
+}
+
+function mergeQuotes(serverQuotes) {
+  const localById = new Map(quotes.map(q => [q.id, q]));
+  let updated = false;
+
+  serverQuotes.forEach(sq => {
+    const existing = localById.get(sq.id);
+    if (!existing) {
+      quotes.push(sq);
+      updated = true;
+    } else if (existing.quote !== sq.quote) {
+      Object.assign(existing, sq);
+      updated = true;
+      console.warn(`Conflict on ID ${sq.id}: server version used`);
     }
-    #quoteDisplay {
-      margin: 20px 0;
-      padding: 15px;
-      background: #f0f0f0;
-      border-left: 5px solid #333;
-      font-style: italic;
+  });
+
+  if (updated) {
+    saveQuotes();
+    alert('Quotes updated from server.');
+    populateCategories();
+  }
+}
+
+async function syncWithServer() {
+  const serverQuotes = await fetchServerQuotes();
+  if (serverQuotes) mergeQuotes(serverQuotes);
+}
+
+setInterval(syncWithServer, POLL_INTERVAL);
+window.addEventListener('load', syncWithServer);
+
+function populateCategories() {
+  const categoryFilter = document.getElementById('categoryFilter');
+  const categories = Array.from(new Set(quotes.map(q => q.author || q.category)));
+  categoryFilter.innerHTML = '<option value="all">All</option>';
+  categories.forEach(cat => {
+    const opt = document.createElement('option');
+    opt.value = cat;
+    opt.textContent = cat;
+    categoryFilter.appendChild(opt);
+  });
+
+  categoryFilter.value = localStorage.getItem('selectedCategory') || 'all';
+  filterQuotes();
+}
+
+function filterQuotes() {
+  const categoryFilter = document.getElementById('categoryFilter');
+  const selected = categoryFilter.value;
+  localStorage.setItem('selectedCategory', selected);
+
+  const filtered = selected === 'all' ? quotes : quotes.filter(q => (q.author || q.category) === selected);
+  const display = document.getElementById('quoteDisplay');
+
+  if (filtered.length === 0) {
+    display.textContent = "No quotes available for this category.";
+  } else {
+    display.innerHTML = filtered.map(q => `"${q.quote || q.text}" — (${q.author || q.category})`).join('<br><br>');
+  }
+}
+
+function addQuote() {
+  const text = document.getElementById('newQuoteText').value.trim();
+  const category = document.getElementById('newQuoteCategory').value.trim().toLowerCase();
+
+  if (!text || !category) {
+    alert("Please enter both quote and category.");
+    return;
+  }
+
+  const newQuote = {
+    id: Date.now(),
+    quote: text,
+    author: category
+  };
+
+  quotes.push(newQuote);
+  saveQuotes();
+  populateCategories();
+
+  document.getElementById('newQuoteText').value = '';
+  document.getElementById('newQuoteCategory').value = '';
+  alert("Quote added!");
+}
+
+function exportToJsonFile(data) {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = "quotes.json";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+document.getElementById('importQuotesInput').addEventListener('change', function (e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    try {
+      const importedQuotes = JSON.parse(e.target.result);
+      if (!Array.isArray(importedQuotes)) throw new Error("Invalid format");
+
+      importedQuotes.forEach(q => {
+        if (q.text || q.quote) {
+          quotes.push({
+            id: Date.now() + Math.floor(Math.random() * 1000),
+            quote: q.quote || q.text,
+            author: q.author || q.category || "unknown"
+          });
+        }
+      });
+
+      saveQuotes();
+      populateCategories();
+      alert("Quotes imported!");
+    } catch (err) {
+      alert("Import error: " + err.message);
     }
-    input, select {
-      margin-right: 10px;
-      padding: 5px;
-    }
-    button {
-      padding: 6px 12px;
-      margin-top: 10px;
-      cursor: pointer;
-    }
-  </style>
-</head>
-<body>
-  <h1>Dynamic Quote Generator</h1>
+  };
+  reader.readAsText(file);
+});
 
-  <!-- Category Filter -->
-  <div>
-    <label for="categorySelect">Choose Category:</label>
-    <select id="categorySelect">
-      <option value="all">All</option>
-    </select>
-    <button id="newQuote">Show New Quote</button>
-  </div>
-
-  <!-- Quote Display -->
-  <div id="quoteDisplay">Click "Show New Quote" to get started!</div>
-
-  <!-- Add New Quote -->
-  <h3>Add a New Quote</h3>
-  <div>
-    <input id="newQuoteText" type="text" placeholder="Enter a new quote" />
-    <input id="newQuoteCategory" type="text" placeholder="Enter quote category" />
-    <button id="addQuoteBtn">Add Quote</button>
-  </div>
-
-  <!-- Export Quotes -->
-  <h3>Export Quotes</h3>
-  <div>
-    <button id="exportQuotesBtn">Export Quotes</button>
-  </div>
-
-  <!-- ✅ Import Quotes -->
-  <h3>Import Quotes</h3>
-  <div>
-    <input type="file" id="importQuotesInput" accept="application/json" />
-  </div>
-
-  <script src="script.js"></script>
-</body>
-</html>
+populateCategories();
