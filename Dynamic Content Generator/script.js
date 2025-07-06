@@ -12,8 +12,8 @@ let lastSelectedCategory = localStorage.getItem("selectedCategory") || "all";
 const quoteDisplay = document.getElementById("quoteDisplay");
 const categoryFilter = document.getElementById("categoryFilter");
 
-// Display a random quote (filtered by category)
-function showRandomQuote() {
+// ✅ Display a random quote (filtered by category)
+function displayRandomQuote() {
   const selectedCategory = categoryFilter.value;
   const filteredQuotes = selectedCategory === "all"
     ? quotes
@@ -52,7 +52,7 @@ function populateCategories() {
 function filterQuotes() {
   lastSelectedCategory = categoryFilter.value;
   localStorage.setItem("selectedCategory", lastSelectedCategory);
-  showRandomQuote();
+  displayRandomQuote();
 }
 
 // Add a new quote and update everything
@@ -95,5 +95,5 @@ function exportQuotes() {
 // Initial setup
 window.onload = function () {
   populateCategories();
-  filterQuotes(); // also calls showRandomQuote()
+  filterQuotes(); // also calls displayRandomQuote()
 };
