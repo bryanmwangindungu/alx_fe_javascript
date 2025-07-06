@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dynamic Quote Generator</title>
+</head>
+<body>
+  <h1>Dynamic Quote Generator</h1>
+
+  <!-- Category Filter Dropdown -->
+  <label for="categoryFilter">Filter by Category:</label>
+  <select id="categoryFilter" onchange="filterQuotes()">
+    <option value="all">All Categories</option>
+    <!-- More options added by JS -->
+  </select>
+
+  <!-- Displayed Quote -->
+  <div id="quoteDisplay" style="margin: 20px 0;"></div>
+
+  <!-- Button to Show New Random Quote -->
+  <button id="newQuote" onclick="showRandomQuote()">Show New Quote</button>
+
+  <hr>
+
+  <!-- Form to Add New Quote -->
+  <h2>Add a New Quote</h2>
+  <input id="newQuoteText" type="text" placeholder="Enter a new quote">
+  <input id="newQuoteCategory" type="text" placeholder="Enter quote category">
+  <button onclick="addQuote()">Add Quote</button>
+
+  <!-- Optional: Export Quotes -->
+  <button onclick="exportQuotes()">Export Quotes</button>
+
+  <script src="script.js"></script>
+</body>
+</html>
